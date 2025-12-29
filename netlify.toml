@@ -1,0 +1,204 @@
+# Netlify Configuration File
+# MedicalMinds v2.0
+
+[build]
+  # Publish directory
+  publish = "."
+  
+  # Build command (empty for static site)
+  command = ""
+  
+  # Functions directory (for serverless functions)
+  functions = "netlify/functions"
+
+# ==================== Redirects ====================
+
+# API Proxy (إذا كان لديك Backend)
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-backend-api.com/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+# SPA Routing - لتوجيه جميع الطلبات إلى الصفحة الرئيسية
+[[redirects]]
+  from = "/*"
+  to = "/MedicalMinds.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+
+# Redirect www to non-www
+[[redirects]]
+  from = "https://www.medicalminds.netlify.app/*"
+  to = "https://medicalminds.netlify.app/:splat"
+  status = 301
+  force = true
+
+# Redirect old URLs
+[[redirects]]
+  from = "/old-page"
+  to = "/new-page"
+  status = 301
+
+# ==================== Headers ====================
+
+# Security Headers (لجميع الصفحات)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Strict Transport Security
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    
+    # XSS Protection
+    X-XSS-Protection = "1; mode=block"
+    
+    # Content Type Options
+    X-Content-Type-Options = "nosniff"
+    
+    # Frame Options
+    X-Frame-Options = "DENY"
+    
+    # Referrer Policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Permissions Policy
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()"
+    
+    # Content Security Policy
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://api.medicalminds.com;"
+
+# Service Worker Headers
+[[headers]]
+  for = "/sw/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+# Manifest Headers
+[[headers]]
+  for = "/medicalminds-manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=3600"
+
+# Static Assets - Long Cache
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/lang/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+    Content-Type = "application/json; charset=utf-8"
+
+# Images - Medium Cache
+[[headers]]
+  for = "*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# HTML - No Cache
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# ==================== Edge Functions ====================
+
+# Deploy to Edge (Cloudflare)
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  environment = { NODE_ENV = "development" }
+
+[context.branch-deploy]
+  environment = { NODE_ENV = "staging" }
+
+# ==================== Build Settings ====================
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+# ==================== Plugin Settings ====================
+
+# Lighthouse Plugin
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  
+  [plugins.inputs]
+    output_path = "reports/lighthouse.html"
+    
+  [plugins.inputs.thresholds]
+    performance = 0.9
+    accessibility = 0.9
+    best-practices = 0.9
+    seo = 0.9
+    pwa = 0.9
+
+# Sitemap Plugin
+[[plugins]]
+  package = "@netlify/plugin-sitemap"
+  
+  [plugins.inputs]
+    buildDir = "."
+    exclude = [
+      '/admin/**',
+      '/api/**'
+    ]
+
+# ==================== Forms ====================
+
+# Forms (إذا كنت تستخدم Netlify Forms)
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
+
+# ==================== Functions ====================
+
+# Functions Settings
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# ==================== Dev Settings ====================
+
+# Netlify Dev Settings
+[dev]
+  command = "npm start"
+  port = 8080
+  targetPort = 8080
+  publish = "."
+  autoLaunch = true

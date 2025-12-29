@@ -1,0 +1,14 @@
+# Netlify Redirects
+# Simple redirect rules for MedicalMinds
+
+# SPA Routing - Redirect all requests to main HTML file
+/*    /MedicalMinds.html   200
+
+# API Proxy (if you have a backend)
+/api/*  https://your-backend-api.com/api/:splat  200
+
+# Redirect www to non-www
+https://www.medicalminds.netlify.app/*  https://medicalminds.netlify.app/:splat  301!
+
+# Force HTTPS
+http://medicalminds.netlify.app/*  https://medicalminds.netlify.app/:splat  301!
